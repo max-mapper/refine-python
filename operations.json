@@ -1,0 +1,28 @@
+[
+  {
+    "op": "core/text-transform",
+    "description": "Text transform on cells in column Date using expression grel:value.toDate()",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Date",
+    "expression": "grel:value.toDate()",
+    "onError": "set-to-blank",
+    "repeat": false,
+    "repeatCount": 10
+  },
+  {
+    "op": "core/text-transform",
+    "description": "Text transform on cells in column Date using expression grel:value.datePart(\"year\")+1",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Date",
+    "expression": "grel:value.datePart(\"year\")+1",
+    "onError": "set-to-blank",
+    "repeat": false,
+    "repeatCount": 10
+  }
+]
