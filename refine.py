@@ -1,3 +1,5 @@
+# originally written by David Huynh (@dfhuynh)
+#
 # requires installation of urllib2_file from https://github.com/seisen/urllib2_file/#readme
 
 import urllib2_file
