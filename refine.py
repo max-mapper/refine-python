@@ -63,11 +63,12 @@ class RefineProject:
     
     return response_json['code'] # can be 'ok' or 'pending'
   
-  def export_rows(self, format='tsv'):
+  def export_rows(self, format='tsv', printColumnHeader=True):
     data = {
       'engine' : '{"facets":[],"mode":"row-based"}',
       'project' : self.id,
-      'format' : format
+      'format' : format,
+      'printColumnHeader': printColumnHeader
     }
     response = urllib2.urlopen(self.server + '/command/core/export-rows/' + self.project_name + '.' + format, data)
     return response.read()
