@@ -71,7 +71,15 @@ class RefineProject:
     }
     response = urllib2.urlopen(self.server + '/command/core/export-rows/' + self.project_name + '.' + format, data)
     return response.read()
-    
+
+  def export_project(self, format='openrefine.tar.gz'):
+    data = {
+      'project' : self.id,
+      'format' : format
+    }
+    response = urllib2.urlopen(self.server + '/command/core/export-project/' + self.project_name + '.' + format, data)
+    return response.read()
+
   def delete_project(self):
     data = {
       'project' : self.id
