@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# originally written by David Huynh (@dfhuynh)
+#
+# Authors:
+# David Huynh (@dfhuynh)
+# Pablo Castellano (@PabloCastellano)
 
-import json
 import os.path
-import urllib2
 import time
+import requests
 
 
 class Refine:
@@ -14,19 +16,12 @@ class Refine:
     def new_project(self, file_path, options=None):
         file_name = os.path.split(file_path)[-1]
         project_name = options['project_name'] if options != None and 'project_name' in options else file_name
-        data = {
-            'project-file': {
-                'fd': open(file_path),
-                'filename': file_name
-            },
-            'project-name': project_name
-        }
 
-        response = urllib2.urlopen(self.server + '/command/core/create-project-from-upload', data)
-        response.read()
-        url_params = urlparse.parse_qs(urlparse.urlparse(response.geturl()).query)
-        if 'project' in url_params:
-            _id = url_params['project'][0]
+        files = {'file': (file_name, open(file_path, 'rb'), 'application/vnd.ms-excel', {'Expires': '0'})}
+
+        r = requests.post(self.server + '/command/core/create-project-from-upload', files=files)
+        if '?project=' in r.request.path_url:
+            _id = r.request.path_url.split('?project=')[1]
             return RefineProject(self.server, _id, project_name)
 
         # TODO: better error reporting
@@ -34,15 +29,15 @@ class Refine:
 
 
 class RefineProject:
-    def __init__(self, server, _id, project_name):
+    def __init__(self, server, id, project_name):
         self.server = server
-        self.id = _id
+        self.id = id
         self.project_name = project_name
 
     def wait_until_idle(self, polling_delay=0.5):
         while True:
-            response = urllib2.urlopen(self.server + '/command/core/get-processes?project=' + self.id)
-            response_json = json.loads(response.read())
+            r = requests.get(self.server + '/command/core/get-processes?project=' + self.id)
+            response_json = r.json()
             if 'processes' in response_json and len(response_json['processes']) > 0:
                 time.sleep(polling_delay)
             else:
@@ -55,8 +50,8 @@ class RefineProject:
         data = {
             'operations': operations_json
         }
-        response = urllib2.urlopen(self.server + '/command/core/apply-operations?project=' + self.id, data)
-        response_json = json.loads(response.read())
+        r = requests.post(self.server + '/command/core/apply-operations?project=' + self.id, data)
+        response_json = r.json()
         if response_json['code'] == 'error':
             raise Exception(response_json['message'])
         elif response_json['code'] == 'pending':
@@ -73,8 +68,8 @@ class RefineProject:
             'format' : format,
             'printColumnHeader': printColumnHeader
         }
-        response = urllib2.urlopen(self.server + '/command/core/export-rows/' + self.project_name + '.' + format, data)
-        return response.read()
+        r = requests.post(self.server + '/command/core/export-rows/' + self.project_name + '.' + format, data)
+        return r.content.decode("utf-8")
 
     def export_project(self, format='openrefine.tar.gz'):
         data = {
@@ -88,6 +83,6 @@ class RefineProject:
         data = {
             'project': self.id
         }
-        response = urllib2.urlopen(self.server + '/command/core/delete-project', data)
-        response_json = json.loads(response.read())
-        return 'code' in response_json and response_json['code'] == 'ok'
+        r = requests.post(self.server + '/command/core/delete-project', data)
+        response_json = r.json()
+        return response_json.get('code', '') == 'ok'
