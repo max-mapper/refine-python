@@ -4,6 +4,7 @@
 # David Huynh (@dfhuynh)
 # Pablo Castellano (@PabloCastellano)
 
+import argparse
 import os.path
 import time
 import requests
@@ -86,3 +87,20 @@ class RefineProject:
         r = requests.post(self.server + '/command/core/delete-project', data)
         response_json = r.json()
         return response_json.get('code', '') == 'ok'
+
+
+def main(args):
+    r = Refine()
+    p = r.new_project(args.input)
+    p.apply_operations(args.operations)
+    print(p.export_rows())
+    p.delete_project()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Apply operations to a CSV file by using the OpenRefine API')
+    parser.add_argument("input", help="Input CSV")
+    parser.add_argument("operations", help="Operations CSV")
+    args = parser.parse_args()
+
+    main(args)
