@@ -89,7 +89,12 @@ class RefineProject:
         return response_json.get('code', '') == 'ok'
 
 
-def main(args):
+def main():
+    parser = argparse.ArgumentParser(description='Apply operations to a CSV file by using the OpenRefine API')
+    parser.add_argument("input", help="Input CSV")
+    parser.add_argument("operations", help="Operations CSV")
+    args = parser.parse_args()
+
     r = Refine()
     p = r.new_project(args.input)
     p.apply_operations(args.operations)
@@ -98,9 +103,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Apply operations to a CSV file by using the OpenRefine API')
-    parser.add_argument("input", help="Input CSV")
-    parser.add_argument("operations", help="Operations CSV")
-    args = parser.parse_args()
-
-    main(args)
+    main()
